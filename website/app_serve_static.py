@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 ## -*- coding: utf-8 -*-
+# Much of this code is from a tutorial: http://oinksoft.com/blog/view/3/
 import os
 from mako import exceptions
 from mako.lookup import TemplateLookup
@@ -25,6 +26,7 @@ def render_template(filename):
     if any(filename.lstrip('/').startswith(p) for p in blacklist_templates):
         raise httpclient.HTTPError(404)
     try:
+        # rendering happens here
         return template_lookup.get_template(filename).render()
     except exceptions.TopLevelLookupException:
         raise httpclient.HTTPError(404)
@@ -43,8 +45,18 @@ class MainHandler(DefaultHandler):
     def get(self, filename):
          self.write(render_template(filename))
 
+# TODO get this to serve JSON and then external JSON
+class JsonHandler(tornado.web.RequestHandler):
+    def get(self, filename):
+        f = open('json/nodes.json', 'r')
+        self.write(
+            f.read()
+            )
+
 application = tornado.web.Application([
-    (r'^/(.*)$', MainHandler),
+    (r'^/json/(.*)$', JsonHandler),
+    (r'^/static/(.*)$', MainHandler),
+    (r'^/main/(.*)$', MainHandler),
 ], debug=True, static_path=os.path.join(root, 'static'))
 
 
