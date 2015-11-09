@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "message": "Welcome to the OSF API.",
+    "version": "2.0",
+    "current_user": null
+  },
+  "links": {
+    "nodes": "https://staging2-api.osf.io/v2/nodes/",
+    "users": "https://staging2-api.osf.io/v2/users/"
+  }
+}
