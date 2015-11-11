@@ -9,7 +9,9 @@ import tornado.web
 from tornado import httpclient
 
 port = 8701
-root = os.path.dirname(__file__)
+root = os.path.dirname(__file__) # __file__ is the path of this file
+# application, then dir 'site'
+# root = os.path.join(os.path.dirname(__file__), 'site')
 template_root = os.path.join(root, 'templates')
 blacklist_templates = ('layouts',)
 
@@ -45,10 +47,15 @@ class MainHandler(DefaultHandler):
     def get(self, filename):
          self.write(render_template(filename))
 
-# TODO get this to serve JSON and then external JSON
 class JsonHandler(tornado.web.RequestHandler):
     def get(self, filename):
         f = open('json/nodes.json', 'r')
+        # unpack/access parameters
+        # read in the file, get the array, and return the requested data
+        # could also do "since [date]" -- do a filter on the array
+        #   could do this with built-in filter 
+        #   OR for loop thru array and create a new array o
+        #   -- array in python is just like ArrayList 
         self.write(
             f.read()
             )
@@ -57,7 +64,9 @@ application = tornado.web.Application([
     (r'^/json/(.*)$', JsonHandler),
     (r'^/static/(.*)$', MainHandler),
     (r'^/main/(.*)$', MainHandler),
-], debug=True, static_path=os.path.join(root, 'static'))
+], debug=True, 
+static_path=os.path.join(root, 'static') # sets static path to be root/static
+)
 
 
 # # favicon_path = '/path/to/favicon.ico'

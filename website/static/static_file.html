@@ -41,7 +41,8 @@
             // NOTE: this is asynchronous! The rest of my code will
             // be executed while JS waits for the file to finish
             // downloading into the browser
-            d3.json("http://localhost:8701/json/nodes", function(
+            // This is relative to web root.
+            d3.json("/json/nodes", function(
                 error, json) {
                 if (error) return console.warn(error);
                 data_len = json.data.length
