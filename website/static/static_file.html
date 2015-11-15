@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <!-- meta: needed to ensure that the browser can 
+        <!-- meta: needed to ensure that the browser can
         parse D3’s functions and data properly -->
         <meta charset="utf-8">
         <title>Static File</title>
@@ -17,7 +17,7 @@
     </head>
     <body>
         <script type="text/javascript">
-        // hard brackets [] indicate an array, and 
+        // hard brackets [] indicate an array, and
         // curly brackets {} indicate an object.
             var dataset = [];
             var pie = d3.layout.pie();
@@ -42,13 +42,13 @@
             // be executed while JS waits for the file to finish
             // downloading into the browser
             // This is relative to web root.
-            d3.json("/json/nodes", function(
+            d3.json("/json/nodes?num=7&start=5", function(
                 error, json) {
                 if (error) return console.warn(error);
-                data_len = json.data.length
+                data_len = json.length
                 var i
                 for (i=0; i<data_len; i++) {
-                    dataset.push( json.data[i].arbitrary_num);
+                    dataset.push( json[i].arbitrary_num);
                       // { key: i, value: json.data[i].id} );
                 }
                 console.log(dataset);
@@ -58,14 +58,14 @@
 
             function makePie() {
                 //Set up groups
-                // Note that we’re saving a reference to each newly 
+                // Note that we’re saving a reference to each newly
                 // created g in a variable called arcs.
                 var arcs = svg.selectAll("g.arc")
                         .data(pie(dataset))
                         .enter()
                         .append("g")
                         .attr("class", "arc")
-                        .attr("transform", "translate(" + outerRadius + 
+                        .attr("transform", "translate(" + outerRadius +
                             ", " + outerRadius + ")");
 
                 //Draw arc paths
@@ -91,7 +91,7 @@
 
 
 
-            
+
         </script>
     </body>
 </html>

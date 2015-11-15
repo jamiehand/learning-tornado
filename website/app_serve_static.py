@@ -2,11 +2,13 @@
 ## -*- coding: utf-8 -*-
 # Much of this code is from a tutorial: http://oinksoft.com/blog/view/3/
 import os
+import json
 from mako import exceptions
 from mako.lookup import TemplateLookup
 import tornado.ioloop
 import tornado.web
 from tornado import httpclient
+from tornado.web import RequestHandler
 
 port = 8701
 root = os.path.dirname(__file__) # __file__ is the path of this file
@@ -47,49 +49,50 @@ class MainHandler(DefaultHandler):
     def get(self, filename):
          self.write(render_template(filename))
 
-class JsonHandler(tornado.web.RequestHandler):
+class JsonHandler(RequestHandler):
     def get(self, filename):
         f = open('json/nodes.json', 'r')
+        # self.write(f.read())
+        json_obj = json.loads(f.read())
+
+        # unpack parameters
+        num_requested = int(RequestHandler.get_argument(self, name='num', default=10))
+        first_entry_requested = int(RequestHandler.get_argument(self, name='start', default=0))
+        last_entry_requested = first_entry_requested + num_requested;
+
+        json_to_return = []
+
+        for i in range(first_entry_requested, last_entry_requested):
+            print("i+1: {}".format(i+1))
+            print(type(json_obj))
+            try:
+                json_to_return.append(json_obj[u'data'][i])
+            except IndexError:
+                break;
+        # print(json_to_return)
+
         # unpack/access parameters
         # read in the file, get the array, and return the requested data
         # could also do "since [date]" -- do a filter on the array
-        #   could do this with built-in filter 
+        #   could do this with built-in filter
         #   OR for loop thru array and create a new array o
-        #   -- array in python is just like ArrayList 
-        self.write(
-            f.read()
-            )
+        #   -- array in python is just like ArrayList
+        # print(json.dumps(json_to_return))
+        self.write(json.dumps(json_to_return))
+        # self.write("hello!!")
+
+
 
 application = tornado.web.Application([
     (r'^/json/(.*)$', JsonHandler),
     (r'^/static/(.*)$', MainHandler),
     (r'^/main/(.*)$', MainHandler),
-], debug=True, 
+], debug=True,
 static_path=os.path.join(root, 'static') # sets static path to be root/static
 )
-
-
-# # favicon_path = '/path/to/favicon.ico'
-# static_path = 'static/static_file.html'
-
-# settings = {'debug': True}
-
-# handlers = [   
-#     # (r'/favicon.ico', tornado.web.StaticFileHandler, {'path': favicon_path}),
-#     # (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': static_path}),
-#     (r'/(static_file)', tornado.web.StaticFileHandler, {'path': static_path}),
-#     (r'/', MainHandler)
-#     ]
-
-# application = tornado.web.Application(handlers, **settings)
 
 # TODO make ES queries here.
 
 if __name__ == "__main__":
     application.listen(port)
     tornado.ioloop.IOLoop.instance().start() # instance vs current?
-
-
-
-
-
