@@ -9,6 +9,7 @@ import tornado.ioloop
 import tornado.web
 from tornado import httpclient
 from tornado.web import RequestHandler
+from elasticsearch import Elasticsearch
 
 port = 8701
 root = os.path.dirname(__file__) # __file__ is the path of this file
@@ -16,6 +17,7 @@ root = os.path.dirname(__file__) # __file__ is the path of this file
 # root = os.path.join(os.path.dirname(__file__), 'site')
 template_root = os.path.join(root, 'templates')
 blacklist_templates = ('layouts',)
+es = Elasticsearch()  # TODO specify domain/port here?
 
 template_lookup = TemplateLookup(input_encoding='utf-8',
                                  output_encoding='utf-8',
@@ -69,24 +71,23 @@ class JsonHandler(RequestHandler):
                 json_to_return.append(json_obj[u'data'][i])
             except IndexError:
                 break;
-        # print(json_to_return)
 
-        # unpack/access parameters
-        # read in the file, get the array, and return the requested data
-        # could also do "since [date]" -- do a filter on the array
-        #   could do this with built-in filter
-        #   OR for loop thru array and create a new array o
-        #   -- array in python is just like ArrayList
-        # print(json.dumps(json_to_return))
         self.write(json.dumps(json_to_return))
-        # self.write("hello!!")
 
-
+class ESHandler(RequestHandler):
+    def get(self, filename):
+        # index = "papers"
+        # print("index: {}".format(index))
+        index = RequestHandler.get_argument(self, name='index', default='papers')
+        # TODO allow any number of arguments
+        response = es.search(index=index)
+        hits = response['hits']['hits']
+        self.write(json.dumps(hits))
 
 application = tornado.web.Application([
     (r'^/json/(.*)$', JsonHandler),
     (r'^/static/(.*)$', MainHandler),
-    (r'^/main/(.*)$', MainHandler),
+    (r'^/es/(.*)$', ESHandler),
 ], debug=True,
 static_path=os.path.join(root, 'static') # sets static path to be root/static
 )
