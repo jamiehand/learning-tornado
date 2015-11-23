@@ -76,11 +76,12 @@ class JsonHandler(RequestHandler):
 
 class ESHandler(RequestHandler):
     def get(self, filename):
-        # index = "papers"
-        # print("index: {}".format(index))
-        index = RequestHandler.get_argument(self, name='index', default='papers')
-        # TODO allow any number of arguments
-        response = es.search(index=index)
+        index = RequestHandler.get_argument(self, name='index',
+            default='papers')
+        # allow query to be passed to body:
+        body = RequestHandler.get_argument(self, name='body',
+            default={'query': {'match_all': {}}})
+        response = es.search(index=index, body=body)
         hits = response['hits']['hits']
         self.write(json.dumps(hits))
 
