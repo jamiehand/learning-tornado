@@ -7,6 +7,7 @@
         <title>Static File</title>
         <!-- this script tag: locates d3 in d3 directory -->
         <script type="text/javascript" src="d3/d3.v3.js"></script>
+        <script type="text/javascript" src="js/make_bar_chart.js"></script>
         <style type="text/css">
             text {
                 font-family: sans-serif;
@@ -17,123 +18,10 @@
     </head>
     <body>
         <script type="text/javascript">
-
-        // TODO put JS in separate file.
-
-            var dataset;
-            var color = d3.scale.category10();
-            var barPadding = 3;
-
-            // define a key function, to be used whenever we bind
-            // data to elements. This function specifies to take the key value
-            // of whatever d object is passed into it.
-            var key = function(d) {
-                return d.key;
-            };
-
-            var w = 500;
-            var h = 300;
-
-
-            d3.json("/es/", function(
-                error, jsonList) {
-                if (error) return console.warn(error);
-                // console.log(jsonList[0]._source.authors)
-                console.log(jsonList);
-                console.log(dataset);
-
-
-                dataset = getTagCounts(jsonList); // pass the jsonList dict to separate its tags
-                console.log(dataset);
-                makeBarChart(dataset);
+            app.buildBarChart({
+                width: 600, // 'width' (key) doesn't have to be in quotes
+                height: 230
             });
-
-            function getTagCounts(docList) {
-                var tagsObj = {};
-                var i;
-                var tempTags;
-
-                var dataLen = docList.length;
-                for (i=0; i<dataLen; i++){  // can use forEach
-                    tempTags = docList[i]._source.tags;
-                    tempTags.forEach(
-                        function(tagName){  // tagName is the element out of the array
-                            if (!tagsObj.hasOwnProperty(tagName)) {
-                                tagsObj[tagName] = 1;
-                            } else { // increment count each time we see tag again
-                                tagsObj[tagName] += 1;
-                            }
-                        }
-                    );
-
-                }
-                return tagsObj;
-            }
-
-            /* dataset: an object */
-            /* NOTE: this stores only the tag names in the DOM, and not their
-             * counts. If I need the counts to be stored in the DOM later, I
-             * can create an array of tag-count pair objects (e.g.
-             * {tag: "foo", count: 2}) */
-            function makeBarChart(dataset) {
-                /* TODO make horizontal, label on left with tagName,
-                 * and use range
-                 * Extent */
-
-
-
-                var tagNames = Object.getOwnPropertyNames(dataset);
-
-                /* sort tagNames according to count */
-                tagNames.sort(function(tag1, tag2){
-                    return dataset[tag2] - dataset[tag1]; // compare function
-                });
-                // takes in an array, and a fcn saying how to process the
-                // objects in the array to get the value to look at
-                console.log(d3.extent(tagNames, function(d){
-                    return dataset[d];
-                }))
-                var svg = d3.select("body").append("svg");
-                svg.attr("width", w)
-                   .attr("height", h);
-                svg.selectAll("rect")
-                   .data(tagNames) // pass in the list of properties
-                   .enter()
-                   .append("rect")
-                   .attr("x", function(d) {
-                       return 0;
-                   })
-                   .attr("y", function(d, i) {
-                       return i * (h / tagNames.length);
-                   })
-                   .attr("width", function(d){
-                       return (dataset[d] * 30);
-                   })
-                   .attr("height", h / tagNames.length - barPadding)
-                   .attr("fill", function(d) {
-                       return "rgb(0,200,"+ (dataset[d]*10) +")";
-                   });
-                svg.selectAll("text")
-                   .data(tagNames)
-                   .enter()
-                   .append("text")
-                   .text(function(d){
-                       return dataset[d]; // return d
-                   })
-                   .attr("x", function(d) {
-                       return (dataset[d] * 30) - 5;
-                   })
-                   .attr("y", function(d, i){
-                       /* +1 for a little less padding than between bars */
-                       return (i * (h / tagNames.length)
-                            + (h / tagNames.length - barPadding + 5) / 2);
-                   })
-                   .attr("font-family", "sans-serif")
-                   .attr("font-size", "11px")
-                   .attr("fill", "white")
-                   .attr("text-anchor", "middle");
-            }
-
         </script>
     </body>
 </html>
