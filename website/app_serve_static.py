@@ -93,8 +93,6 @@ application = tornado.web.Application([
 static_path=os.path.join(root, 'static') # sets static path to be root/static
 )
 
-# TODO make ES queries here.
-
 if __name__ == "__main__":
     application.listen(port)
     tornado.ioloop.IOLoop.instance().start() # instance vs current?
