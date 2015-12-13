@@ -25,12 +25,23 @@ var app = app || {};
     var minBarPlusPaddingHeight = 17; // min due to label height
     var isEveryTagDisplayedInBarChart = true;
     var barPadding = 3;
-    var barColor = "rgb(0,200,50)";
+    var barColorBack = "rgb(0,200,50)";
+    var barColorFront = "rgb(0,100,100)";
     var barLabelColor = "white";
     var tagNameColor = "black";
 
-    var clickHandler = function(d,i){
-        console.log(d);
+    var barsClickHandler = cloudClickHandler; // TODO change back to updateBarsAndLabels
+
+    var cloudClickHandler = function(d,i){
+        // console.log(d);
+        d3.json(wordCloud.dataURL, function(error, jsonList) {
+            if (error) return console.warn(error);
+
+            dataset = getTagCounts(jsonList, d); // pass the jsonList dict to separate its tags
+            console.log(dataset);
+            /* pass it a function as to what to do on click */
+            drawWordCloud(dataset, wordCloud.locationInDOM, wordCloud.clickHandler);
+        });
     };
 
     /* don't run automatically; allow user to load in their own parameters */
@@ -40,10 +51,11 @@ var app = app || {};
         barChart.h = params.height || h;
         barChart.locationInDOM = params.locationInDOM || locationInDOM;
         barChart.tagNameColor = params.tagNameColor || tagNameColor;
-        barChart.clickHandler = params.clickHandler || clickHandler;
+        barChart.clickHandler = params.clickHandler || barsClickHandler;
 
         barPadding = params.barPadding || barPadding;
-        barColor = params.barColor || barColor;
+        barColorBack = params.barColorBack || barColorBack;
+        barColorFront = params.barColorFront || barColorFront;
         barLabelColor = params.barLabelColor || barLabelColor;
 
         /* 'function' is a callback function to be run once /es/ has
@@ -61,7 +73,9 @@ var app = app || {};
     };
 
 
-    /* Note: JS doesn't mind if I have the right number of params */
+    /* pass in only the docList param to full count of all tags;
+     * pass in both docList and selectedTagName to filter counts
+     * by documents that contain the selectedTagName */
     function getTagCounts(docList, selectedTagName) {
         var tagsObj = {}; // obj to collect counts
         var i;
@@ -70,11 +84,12 @@ var app = app || {};
         var dataLen = docList.length;
         for (i=0; i<dataLen; i++){
             tempTags = docList[i]._source.tags;
-            if (selectedTagName == undefined || (tempTags.indexOf(selectedTagName) > -1)) {
+            if (selectedTagName == undefined ||
+                (tempTags.indexOf(selectedTagName) > -1)) {
                 console.log("hello");
                 // TODO instead of forEach --> get the title --> could use filter funtion.
                 tempTags.forEach(
-                    function(tagName){  // tagName is the element out of the array
+                    function(tagName){  // tagName is an element of tempTags
                         if (!tagsObj.hasOwnProperty(tagName)) {
                             tagsObj[tagName] = 1;
                         } else { // increment count each time we see tag again
@@ -150,51 +165,126 @@ var app = app || {};
             tagNames = tempTagNames;
         }
 
+        // TODO better way to manage left margin than '- left_margin' ?
+
         var svg = d3.select(locationInDOM).append("svg");
         svg.attr("width", barChart.w)
            .attr("height", barChart.h);
-        var rects = svg.selectAll("rect")
-                       .data(tagNames) // pass in the list of properties
-                       .enter()
-                       .append("rect")
-                       .attr("x", function(d) {
-                           return xScale(0);
-                       })
-                       .attr("y", function(d, i) {
-                           return i * (barChart.h / tagNames.length);
-                       })
-                       .attr("width", function(d){
-                           return xScale(dataset[d]) - left_margin; // TODO best way to manage left margin?
-                       })
-                       .attr("height", barChart.h / tagNames.length - barPadding)
-                       .attr("fill", barColor);
+        var rectsBack = svg.selectAll("rect.back")
+                           .data(tagNames) // pass in the list of properties
+                           .enter()
+                           .append("rect")
+                           .attr("class", "back")
+                           .attr("x", function(d) {
+                               return xScale(0);
+                           })
+                           .attr("y", function(d, i) {
+                               return i * (barChart.h / tagNames.length);
+                           })
+                           .attr("width", function(d){
+                               return xScale(dataset[d]) - left_margin;
+                           })
+                           .attr("height", barChart.h / tagNames.length - barPadding)
+                           .attr("fill", barColorBack);
 
-        rects.on("click", clickHandler);
+        var rectsFront = svg.selectAll("rect.front")
+                            .data(tagNames) // pass in the list of properties
+                            .enter()
+                            .append("rect")
+                            .attr("class", "front")
+                            .attr("x", function(d) {
+                                return xScale(0);
+                            })
+                            .attr("y", function(d, i) {
+                                return i * (barChart.h / tagNames.length);
+                            })
+                            .attr("width", function(d){
+                                return xScale(dataset[d]) - left_margin;
+                            })
+                            .attr("height", barChart.h / tagNames.length - barPadding)
+                            .attr("fill", barColorFront);
 
-        svg.selectAll("text.values") // these are 'text' tags with class 'values'
-           .data(tagNames)
-           .enter()
-           .append("text")
-           .text(function(d){
-               return dataset[d];
-           })
-           .attr("x", function(d) {
-               return xScale(dataset[d]) - char_width;
-           })
-           .attr("y", function(d, i){
-               return ((i * (barChart.h / tagNames.length)
-                    + (barChart.h / tagNames.length - barPadding + 7) / 2));
-           })
-           .attr("font-family", "sans-serif")
-           .attr("font-size", "11px")
-           .attr("fill", barLabelColor)
-           .attr("text-anchor", "middle")
-           .attr("class", "values");
+        // TODO make this function more generic and simply have s'th like:
+        // rectsFront.on("click", updateBarsAndLabels(rectsFront, rectValues));
+        // rectsBack.on("click", updateBarsAndLabels(rectsFront, rectValues));
+        // But my problem is: .on() automatically passes the params of d, i,
+        // and s'th else ('this?' - see https://github.com/mbostock/d3/wiki/Selections#on),
+        // so how can I pass my own parameters?
+
+        rectsFront.on("click", function(tagName, i){
+            console.log(tagName);
+            d3.json(barChart.dataURL, function(error, jsonList) {
+                if (error) return console.warn(error);
+                dataset = getTagCounts(jsonList, tagName);
+                console.log(dataset);
+                rectsFront.transition()
+                    .delay(function(d, i) {
+                         return i / dataset.length * 100;
+                    })
+                    .duration(1000)
+                    .attr("width", function(d){
+                        if (!(dataset.hasOwnProperty(d))){
+                            console.log("doesn't have: "+ d);
+                            console.log(xScale(0) - left_margin);
+                            return xScale(0) - left_margin;
+                        } else {
+                            return xScale(dataset[d]) - left_margin;
+                        }
+                    });
+            });
+        });
+
+        rectsBack.on("click", function(tagName, i){
+            console.log(tagName);
+            d3.json(barChart.dataURL, function(error, jsonList) {
+                if (error) return console.warn(error);
+                dataset = getTagCounts(jsonList, tagName);
+                console.log(dataset);
+                rectsFront.transition()
+                    .delay(function(d, i) {
+                         return i / dataset.length * 100;
+                    })
+                    .duration(1000)
+                    .attr("width", function(d){
+                        if (!(dataset.hasOwnProperty(d))){
+                            console.log("doesn't have: "+ d);
+                            console.log(xScale(0) - left_margin);
+                            return xScale(0) - left_margin;
+                        } else {
+
+                            return xScale(dataset[d]) - left_margin;
+                        }
+                    });
+            });
+        });
+
+
+        /*  make 'text' tags with class 'values' */
+        var rectValues = svg.selectAll("text.values")
+                            .data(tagNames)
+                            .enter()
+                            .append("text")
+                            .attr("class", "values")
+                            .text(function(d){
+                                return dataset[d];
+                            })
+                            .attr("x", function(d) {
+                                return xScale(dataset[d]) - char_width;
+                            })
+                            .attr("y", function(d, i){
+                                return ((i * (barChart.h / tagNames.length)
+                                     + (barChart.h / tagNames.length - barPadding + 7) / 2));
+                            })
+                            .attr("font-family", "sans-serif")
+                            .attr("font-size", "11px")
+                            .attr("fill", barLabelColor)
+                            .attr("text-anchor", "middle");
 
         svg.selectAll("text.labels")
            .data(tagNames)
            .enter()
            .append("text")
+           .attr("class", "labels")
            .text(function(d){
                /* modified from http://stackoverflow.com/a/7463674/4979097 */
                var trimmedString = d.length > max_tagName_len_chars ?
@@ -210,8 +300,7 @@ var app = app || {};
            .style("font-family", "sans-serif")
            .style("font-size", "13px")
            .style("fill", barChart.tagNameColor) // TODO put this in the CSS
-           .style("text-anchor", "left")
-           .attr("class", "labels");
+           .style("text-anchor", "left");
     }
 
     var buildWordCloud = function(params){
@@ -219,18 +308,15 @@ var app = app || {};
         wordCloud.w = params.width || w;
         wordCloud.h = params.height || h;
         wordCloud.locationInDOM = params.locationInDOM || locationInDOM;
-        wordCloud.barPadding = params.barPadding || barPadding;
-        wordCloud.barColor = params.barColor || barColor;
-        wordCloud.barLabelColor = params.barLabelColor || barLabelColor;
         wordCloud.tagNameColor = params.tagNameColor || tagNameColor;
-        wordCloud.clickHandler = params.clickHandler || clickHandler;
+        wordCloud.clickHandler = params.clickHandler || cloudClickHandler;
 
         /* 'function' is a callback function to be run once /es/ has
          * been fetched. */
         d3.json(wordCloud.dataURL, function(error, jsonList) {
             if (error) return console.warn(error);
 
-            dataset = getTagCounts(jsonList, "COS"); // pass the jsonList dict to separate its tags
+            dataset = getTagCounts(jsonList); // pass the jsonList dict to separate its tags
             console.log(dataset);
             /* pass it a function as to what to do on click */
             drawWordCloud(dataset, wordCloud.locationInDOM, wordCloud.clickHandler);
