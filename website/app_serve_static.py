@@ -13,6 +13,7 @@ from elasticsearch import Elasticsearch
 
 port = 8701
 root = os.path.dirname(__file__) # __file__ is the path of this file
+
 # application, then dir 'site'
 # root = os.path.join(os.path.dirname(__file__), 'site')
 template_root = os.path.join(root, 'templates')

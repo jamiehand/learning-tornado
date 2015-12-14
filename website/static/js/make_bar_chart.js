@@ -20,17 +20,19 @@ var app = app || {};
     /* for storing preferences for the barChart and wordCloud */
     var barChart = {};
     var wordCloud = {};
+    var titleNames = {};
 
     /* bar formatting */
     var minBarPlusPaddingHeight = 17; // min due to label height
     var isEveryTagDisplayedInBarChart = true;
     var barPadding = 3;
-    var barColorBack = "rgb(0,200,50)";
+    var barColorBack = "rgb(200,235,188)";
     var barColorFront = "rgb(0,100,100)";
     var barLabelColor = "white";
     var tagNameColor = "black";
 
     var barsClickHandler = cloudClickHandler; // TODO change back to updateBarsAndLabels
+    var titleNameClickHandler = cloudClickHandler; // TODO change this
 
     var cloudClickHandler = function(d,i){
         // console.log(d);
@@ -52,6 +54,7 @@ var app = app || {};
         barChart.locationInDOM = params.locationInDOM || locationInDOM;
         barChart.tagNameColor = params.tagNameColor || tagNameColor;
         barChart.clickHandler = params.clickHandler || barsClickHandler;
+        barChart.titlesLists = params.titlesLists || undefined;
 
         barPadding = params.barPadding || barPadding;
         barColorBack = params.barColorBack || barColorBack;
@@ -86,7 +89,6 @@ var app = app || {};
             tempTags = docList[i]._source.tags;
             if (selectedTagName == undefined ||
                 (tempTags.indexOf(selectedTagName) > -1)) {
-                console.log("hello");
                 // TODO instead of forEach --> get the title --> could use filter funtion.
                 tempTags.forEach(
                     function(tagName){  // tagName is an element of tempTags
@@ -100,6 +102,47 @@ var app = app || {};
             }
         }
         return tagsObj;
+    }
+
+    /* pass in only the docList param to full count of all tags;
+     * pass in both docList and selectedTagName to filter counts
+     * by documents that contain the selectedTagName */
+    function getTitleNames(docList, selectedTagName) {
+        var titlesObj = {}; // obj to collect titles
+        var i;
+        var tempTags;
+        var tempTitle;
+        var titlesWithTag = [];
+        var titlesWithoutTag = [];
+
+        var dataLen = docList.length;
+        for (i=0; i<dataLen; i++){
+            tempTags = docList[i]._source.tags;
+            tempTitle = docList[i]._source.title;
+            /* if there is no tag parameter, or the tag is in the tag
+             * list (tempTags) of this document, add title to titlesWithTag */
+            if (selectedTagName == undefined ||
+                (tempTags.indexOf(selectedTagName) > -1)) {
+                titlesWithTag.push(tempTitle);
+                console.log("pushed to With: " + tempTitle);
+                // TODO instead of forEach --> get the title --> could use filter funtion.
+                // tempTags.forEach(
+                    // function(tagName){  // tagName is an element of tempTags
+                        // if (!tagsObj.hasOwnProperty(tagName)) {
+                        //     tagsObj[tagName] = 1;
+                        // } else { // increment count each time we see tag again
+                        //     tagsObj[tagName] += 1;
+                        // }
+                    // }
+                // );
+            } else {
+                titlesWithoutTag.push(tempTitle);
+                console.log("pushed to Without: " + tempTitle);
+            }
+        }
+        titlesObj.titlesWithTag = titlesWithTag;
+        titlesObj.titlesWithoutTag = titlesWithoutTag;
+        return titlesObj;
     }
 
     /* dataset is an object
@@ -204,61 +247,6 @@ var app = app || {};
                             .attr("height", barChart.h / tagNames.length - barPadding)
                             .attr("fill", barColorFront);
 
-        // TODO make this function more generic and simply have s'th like:
-        // rectsFront.on("click", updateBarsAndLabels(rectsFront, rectValues));
-        // rectsBack.on("click", updateBarsAndLabels(rectsFront, rectValues));
-        // But my problem is: .on() automatically passes the params of d, i,
-        // and s'th else ('this?' - see https://github.com/mbostock/d3/wiki/Selections#on),
-        // so how can I pass my own parameters?
-
-        rectsFront.on("click", function(tagName, i){
-            console.log(tagName);
-            d3.json(barChart.dataURL, function(error, jsonList) {
-                if (error) return console.warn(error);
-                dataset = getTagCounts(jsonList, tagName);
-                console.log(dataset);
-                rectsFront.transition()
-                    .delay(function(d, i) {
-                         return i / dataset.length * 100;
-                    })
-                    .duration(1000)
-                    .attr("width", function(d){
-                        if (!(dataset.hasOwnProperty(d))){
-                            console.log("doesn't have: "+ d);
-                            console.log(xScale(0) - left_margin);
-                            return xScale(0) - left_margin;
-                        } else {
-                            return xScale(dataset[d]) - left_margin;
-                        }
-                    });
-            });
-        });
-
-        rectsBack.on("click", function(tagName, i){
-            console.log(tagName);
-            d3.json(barChart.dataURL, function(error, jsonList) {
-                if (error) return console.warn(error);
-                dataset = getTagCounts(jsonList, tagName);
-                console.log(dataset);
-                rectsFront.transition()
-                    .delay(function(d, i) {
-                         return i / dataset.length * 100;
-                    })
-                    .duration(1000)
-                    .attr("width", function(d){
-                        if (!(dataset.hasOwnProperty(d))){
-                            console.log("doesn't have: "+ d);
-                            console.log(xScale(0) - left_margin);
-                            return xScale(0) - left_margin;
-                        } else {
-
-                            return xScale(dataset[d]) - left_margin;
-                        }
-                    });
-            });
-        });
-
-
         /*  make 'text' tags with class 'values' */
         var rectValues = svg.selectAll("text.values")
                             .data(tagNames)
@@ -280,28 +268,149 @@ var app = app || {};
                             .attr("fill", barLabelColor)
                             .attr("text-anchor", "middle");
 
-        svg.selectAll("text.labels")
-           .data(tagNames)
-           .enter()
-           .append("text")
-           .attr("class", "labels")
-           .text(function(d){
-               /* modified from http://stackoverflow.com/a/7463674/4979097 */
-               var trimmedString = d.length > max_tagName_len_chars ?
-                   d.substring(0, max_tagName_len_chars - 3) + "..." :
-                   d.substring(0, max_tagName_len_chars);
-               return trimmedString;
-           })
-           .attr("x", 10) // indent 10
-           .attr("y", function(d, i){
-               return ((i * (barChart.h / tagNames.length)
-                    + (barChart.h / tagNames.length - barPadding + 7) / 2));
-           })
-           .style("font-family", "sans-serif")
-           .style("font-size", "13px")
-           .style("fill", barChart.tagNameColor) // TODO put this in the CSS
-           .style("text-anchor", "left");
+        /* labels to go along side of chart */
+        var rectLabels = svg.selectAll("text.labels")
+                            .data(tagNames)
+                            .enter()
+                            .append("text")
+                            .attr("class", "labels")
+                            .text(function(d){
+                                /* modified from http://stackoverflow.com/a/7463674/4979097 */
+                                var trimmedString = d.length > max_tagName_len_chars ?
+                                    d.substring(0, max_tagName_len_chars - 3) + "..." :
+                                    d.substring(0, max_tagName_len_chars);
+                                return trimmedString;
+                            })
+                            .attr("x", 10) // indent 10
+                            .attr("y", function(d, i){
+                                return ((i * (barChart.h / tagNames.length)
+                                     + (barChart.h / tagNames.length - barPadding + 7) / 2));
+                            })
+                            .style("font-family", "sans-serif")
+                            .style("font-size", "13px")
+                            .style("fill", barChart.tagNameColor) // TODO put this in the CSS
+                            .style("text-anchor", "left");
+
+        // TODO make this function more generic and simply have s'th like:
+        // rectsFront.on("click", updateBarsAndLabels(rectsFront, rectValues));
+        // (i.e. be able to pass in the bars and values that I want to move),
+        // enabling me to move 'updateBarsAndLabels()' outside this method.
+        // But my problem is: .on() automatically passes the params of d, i,
+        // and s'th else ('this?' - see https://github.com/mbostock/d3/wiki/Selections#on),
+        // so how can I pass my own parameters?
+
+        var updateBarsAndLabels = function(tagName){
+            d3.json(barChart.dataURL, function(error, jsonList) {
+                if (error) return console.warn(error);
+                dataset = getTagCounts(jsonList, tagName);
+                rectsFront.transition()
+                          .delay(function(d, i) {
+                               return i / dataset.length * 100;
+                          })
+                          .duration(1000)
+                          .attr("width", function(d){
+                              if (!(dataset.hasOwnProperty(d))){
+                                  return xScale(0) - left_margin;
+                              } else {
+                                  return xScale(dataset[d]) - left_margin;
+                              }
+                          });
+                rectValues.transition()
+                          .delay(function(d, i) {
+                               return i / dataset.length * 100;
+                          })
+                          .duration(1000)
+                          .text(function(d){
+                              if (!(dataset.hasOwnProperty(d))){
+                                  return "";
+                              } else {
+                                  return dataset[d];
+                              }
+                          })
+                          .attr("x", function(d){
+                              if (!(dataset.hasOwnProperty(d))){
+                                  return xScale(0) - char_width;
+                              } else {
+                                  return xScale(dataset[d]) - char_width;
+                              }
+                          });
+            });
+        };
+
+        rectsFront.on("click", updateBarsAndLabels);
+        rectsBack.on("click",  updateBarsAndLabels);
+        rectLabels.on("click", updateBarsAndLabels);
+        rectValues.on("click", updateBarsAndLabels);
     }
+
+    var buildTitleNames = function(params){
+        titleNames.dataURL = params.dataURL || dataURL;
+        titleNames.w = params.width || w;
+        titleNames.h = params.height || h;
+        titleNames.locationInDOM = params.locationInDOM || locationInDOM;
+        titleNames.tagNameColor = params.tagNameColor || tagNameColor;
+        titleNames.clickHandler = params.clickHandler || titleNameClickHandler;
+
+        /* 'function' is a callback function to be run once /es/ has
+         * been fetched. */
+        d3.json(wordCloud.dataURL, function(error, jsonList) {
+            if (error) return console.warn(error);
+
+            dataset = getTitleNames(jsonList); // pass the jsonList dict to separate its tags
+            console.log(dataset);
+            /* pass it a function as to what to do on click */
+            return drawTitleNames(dataset, titleNames.locationInDOM,
+                                  titleNames.clickHandler);
+        });
+    }
+
+    var drawTitleNames = function(dataset, locationInDOM, clickHandler) {
+        var titlesWithTag = dataset.titlesWithTag;
+        var titlesWithoutTag = dataset.titlesWithoutTag;
+        var text_size = 20;
+
+        /* sort titles alphabetically */
+        titlesWithTag.sort();
+        titlesWithoutTag.sort();
+
+        console.log(titlesWithTag);
+        console.log(titlesWithoutTag);
+
+        var titleList = d3.select(locationInDOM).append("p");
+        titleList.append("span")
+                 .attr("class", "heading")
+                 .text("Project Titles: ")
+                 .style("color", titleNames.tagNameColor);
+
+        var titleTextsWithTag = titleList.selectAll("span")
+                                  .data(titlesWithTag)
+                                  .enter()
+                                  .append("span")
+                                  .attr("class", "titleOfDocWithTag")
+                                  .text(function(d){
+                                      /* modified from http://stackoverflow.com/a/7463674/4979097 */
+                                      return ("- " + d);
+                                  })
+                                  .style("color", titleNames.tagNameColor);
+
+        var titleTextsWithoutTag = titleList.selectAll("span")
+                                  .data(titlesWithoutTag)
+                                  .enter()
+                                  .append("span")
+                                  .attr("class", "titleOfDocWithoutTag")
+                                  .text(function(d){
+                                      /* modified from http://stackoverflow.com/a/7463674/4979097 */
+                                      return ("- " + d);
+                                  })
+                                  .style("color", titleNames.tagNameColor);
+
+        // titleTextsWithTag.on("click", clickHandler);
+        // titleTextsWithoutTag.on("click", clickHandler);
+        var titlesLists;
+        titlesLists.titlesWithTag = titleTextsWithTag;
+        titlesLists.titlesWithoutTag = titleTextsWithoutTag;
+        return titlesLists;
+    };
 
     var buildWordCloud = function(params){
         wordCloud.dataURL = params.dataURL || dataURL;
@@ -321,11 +430,9 @@ var app = app || {};
             /* pass it a function as to what to do on click */
             drawWordCloud(dataset, wordCloud.locationInDOM, wordCloud.clickHandler);
         });
-
     };
 
     var drawWordCloud = function(dataset, locationInDOM, clickHandler) {
-
         var tagNames = Object.getOwnPropertyNames(dataset);
 
         var min_text_size = 8;
@@ -347,8 +454,10 @@ var app = app || {};
         }))
 
         var cloud = d3.select(locationInDOM).append("p");
-        // cloud.attr("width", wordCloud.w) // TODO put within div?
-        //    .attr("height", wordCloud.h);
+        cloud.append("span")
+             .attr("class", "heading")
+             .text("Tag Cloud: ")
+             .style("color", titleNames.tagNameColor);
         var tagTexts = cloud.selectAll("span")
                            .data(tagNames)
                            .enter()
@@ -372,5 +481,7 @@ var app = app || {};
     exports.buildBarChart = buildBarChart;
     exports.isEveryTagDisplayedInBarChart = isEveryTagDisplayedInBarChart;
     exports.buildWordCloud = buildWordCloud;
+    exports.buildTitleNames = buildTitleNames;
+
 
 })(app);

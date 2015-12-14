@@ -9,6 +9,7 @@
         <script type="text/javascript" src="d3/d3.v3.js"></script>
         <script type="text/javascript" src="js/make_bar_chart.js"></script>
         <style type="text/css">
+            /*body { float:left;} // TODO needed for titleParagraph background-color?*/
             text {
                 font-family: sans-serif;
                 /*font-size: 12px;*/
@@ -17,23 +18,53 @@
             .cloudSpan {
                 padding-right: .5em;
             }
+            .heading {
+                font-weight: bold;
+                text-decoration: underline;
+                line-height: 100%;
+                display: block;
+                font-family: sans-serif;
+                font-size: 20;
+            }
+            .titleOfDocWithoutTag {
+                line-height: 100%;
+                display: block;
+                font-family: sans-serif;
+                font-size: 20; /* NOTE: change as desired for titles list */
+            }
+            .titleOfDocWithTag {
+                line-height: 100%;
+                background-color: #C7EBBC;
+                display: block;
+                font-family: sans-serif;
+                font-size: 20; /* NOTE: change as desired for titles list */
+            }
         </style>
     </head>
     <body>
         <div id="div1"> </div>
-        <div id="div2"> </div>
+        <div id="div2" background-color="blue"> </div>
+        <div id="div3"> </div>
         <script type="text/javascript">
+            var titlesLists = app.buildTitleNames({
+                                    width: 300,
+                                    height: 260,
+                                    locationInDOM: "#div2"
+                                });
+            console.log(titlesLists);
             app.buildBarChart({
                 width: 400,
                 height: 200,
-                locationInDOM: "#div1"
+                locationInDOM: "#div1",
+                // titlesLists: titlesLists
             });
 
             app.buildWordCloud({
                 width: 300,
                 height: 260,
-                locationInDOM: "#div2"
+                locationInDOM: "#div3"
             });
+
         </script>
     </body>
 </html>
