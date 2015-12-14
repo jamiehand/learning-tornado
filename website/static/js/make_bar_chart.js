@@ -51,10 +51,8 @@ var app = app || {};
         // console.log(d);
         fetchData(wordCloud.dataURL, function(error, jsonList) {
             if (error) return console.warn(error);
-
-            dataset = getTagCounts(jsonList, d); // pass the jsonList dict to separate its tags
-            console.log(dataset);
-            /* pass it a function as to what to do on click */
+            dataset = getTagCounts(jsonList, d);
+            /* pass in a function as to what to do on click */
             drawWordCloud(dataset, wordCloud.locationInDOM, wordCloud.clickHandler);
         });
     };
@@ -76,15 +74,21 @@ var app = app || {};
 
         /* 'function' is a callback function to be run once /es/ has
          * been fetched. */
-        d3.json(barChart.dataURL, function(
-            error, jsonList) {
+        fetchData(barChart.dataURL, function(error, jsonList) {
             if (error) return console.warn(error);
-
-            dataset = getTagCounts(jsonList); // pass the jsonList dict to separate its tags
-            console.log(dataset);
-            /* pass it a function as to what to do on click */
+            dataset = getTagCounts(jsonList);
+            /* pass in a function as to what to do on click */
             drawBarsAndLabels(dataset, barChart.locationInDOM, barChart.clickHandler);
         });
+        // d3.json(barChart.dataURL, function(
+        //     error, jsonList) {
+        //     if (error) return console.warn(error);
+        //
+        //     dataset = getTagCounts(jsonList); // pass the jsonList dict to separate its tags
+        //     console.log(dataset);
+        //     /* pass it a function as to what to do on click */
+        //     drawBarsAndLabels(dataset, barChart.locationInDOM, barChart.clickHandler);
+        // });
 
     };
 
@@ -313,7 +317,7 @@ var app = app || {};
         // so how can I pass my own parameters?
 
         var updateBarsAndLabels = function(tagName){
-            d3.json(barChart.dataURL, function(error, jsonList) {
+            fetchData(barChart.dataURL, function(error, jsonList) {
                 if (error) return console.warn(error);
                 dataset = getTagCounts(jsonList, tagName);
                 rectsFront.transition()
@@ -366,12 +370,10 @@ var app = app || {};
 
         /* 'function' is a callback function to be run once /es/ has
          * been fetched. */
-        d3.json(wordCloud.dataURL, function(error, jsonList) {
+        fetchData(titleNames.dataURL, function(error, jsonList) {
             if (error) return console.warn(error);
-
-            dataset = getTitleNames(jsonList); // pass the jsonList dict to separate its tags
-            console.log(dataset);
-            /* pass it a function as to what to do on click */
+            dataset = getTitleNames(jsonList);
+            /* pass in a function as to what to do on click */
             return drawTitleNames(dataset, titleNames.locationInDOM,
                                   titleNames.clickHandler);
         });
@@ -435,12 +437,10 @@ var app = app || {};
 
         /* 'function' is a callback function to be run once /es/ has
          * been fetched. */
-        d3.json(wordCloud.dataURL, function(error, jsonList) {
+        fetchData(wordCloud.dataURL, function(error, jsonList) {
             if (error) return console.warn(error);
-
-            dataset = getTagCounts(jsonList); // pass the jsonList dict to separate its tags
-            console.log(dataset);
-            /* pass it a function as to what to do on click */
+            dataset = getTagCounts(jsonList);
+            /* pass in a function as to what to do on click */
             drawWordCloud(dataset, wordCloud.locationInDOM, wordCloud.clickHandler);
         });
     };
