@@ -66,6 +66,8 @@ var app = app || {};
         barChart.tagNameColor = params.tagNameColor || tagNameColor;
         barChart.clickHandler = params.clickHandler || barsClickHandler;
         barChart.titlesObj = params.titlesObj || undefined;
+        console.log("barChart.titlesObj");
+        console.log(barChart.titlesObj);
 
         barPadding = params.barPadding || barPadding;
         barColorBack = params.barColorBack || barColorBack;
@@ -150,6 +152,8 @@ var app = app || {};
         }
         titlesObj.titlesWithTag = titlesWithTag;
         titlesObj.titlesWithoutTag = titlesWithoutTag;
+        console.log("HERE ********** : ")
+        console.log(titlesObj);
         return titlesObj;
     }
 
@@ -176,7 +180,6 @@ var app = app || {};
         max_tagName_len_chars = max_tagName_len_pixels / char_width;
 
         left_margin = max_tagName_len_pixels + 5;
-        console.log(max_tagName_len_pixels);
 
         /* scales
          * Note: min/max/extent takes in an array, and a fcn saying how
@@ -299,7 +302,78 @@ var app = app || {};
         // and s'th else ('this?' - see https://github.com/mbostock/d3/wiki/Selections#on),
         // so how can I pass my own parameters?
 
-        var updateBarsAndLabels = function(tagName){
+        var updateBarsAndLabels = function(tagName){  // possible to pass param into here?
+            console.log("as;ldkfja;lsdfjasd;lf");
+            console.log(titlesObj);
+            var updateTitleNames = function(titlesObj){
+
+                console.log("titlesObj: ");
+                console.log(titlesObj);  // TODO why is this '4' and not an actual object??
+
+                fetchData(titleNames.dataURL, function(error, jsonList) {
+                    if (error) return console.warn(error);
+                    dataset = getTitleNames(jsonList, tagName);
+                    console.log("HELLO!!!! **** ASDF: ");
+                    console.log(dataset);
+                    /* pass in a function as to what to do on click */
+                    var titlesWithTag = dataset.titlesWithTag;
+                    var titlesWithoutTag = dataset.titlesWithoutTag;
+                    // var titleTextsWithTag = titlesObj.titleTextsWithTag;
+                    // var titleTextsWithoutTag = titlesObj.titleTextsWithoutTag;
+
+                    // console.log(titleTextsWithTag);
+
+                    d3.select('#div2').selectAll('span').remove();
+
+                    var titleList = d3.select('#div2').append("p");
+                    titleList.append("span")
+                             .attr("class", "heading")
+                             .text("Project Titles: ")
+                             .style("color", titleNames.tagNameColor);
+
+                    var titleTextsWithoutTag = titleList.selectAll("span.titleOfDocWithTag");
+                    titleTextsWithoutTag.data(titlesWithTag)
+                                              .enter()
+                                              .append("span")
+                                              .attr("class", "titleOfDocWithTag")
+                                              .text(function(d){
+                                                  return ("- " + d);
+                                              })
+                                              .style("color", titleNames.tagNameColor);
+
+                    var titleTextsWithoutTag = titleList.selectAll("span.titleOfDocWithoutTag");
+                    titleTextsWithoutTag.data(titlesWithoutTag)
+                                              .enter()
+                                              .append("span")
+                                              .attr("class", "titleOfDocWithoutTag")
+                                              .text(function(d){
+                                                  return ("- " + d);
+                                              })
+                                              .style("color", titleNames.tagNameColor);
+
+                    // titleTextsWithTag.transition()
+                    //                  .data(titlesWithTag)
+                    //                  .enter()
+                    //                  .append("span")
+                    //                  .attr("class", "titleOfDocWithTag")
+                    //                  .text(function(d){
+                    //                      return ("- " + d);
+                    //                  })
+                    //                  .style("color", titleNames.tagNameColor);
+                    //
+                    // titleTextsWithTag.transition()
+                    //                  .data(titlesWithTag)
+                    //                  .text(function(d){
+                    //                      return ("- " + d);
+                    //                  });
+                    //
+                    // titleTextsWithTag.exit()
+                    //                  .remove();
+
+
+                });
+            };
+
             fetchData(barChart.dataURL, function(error, jsonList) {
                 if (error) return console.warn(error);
                 dataset = getTagCounts(jsonList, tagName);
@@ -339,23 +413,10 @@ var app = app || {};
                           });
                 /* change titles lists to first list the documents with the
                  * tag tagName, and then the other documents */
+                console.log("titlesObj before passing **** : ");
+                console.log(titlesObj);
                 updateTitleNames(titlesObj);
             });
-
-            var updateTitleNames = function(titleObj){
-                fetchData(titleNames.dataURL, function(error, jsonList) {
-                    if (error) return console.warn(error);
-                    dataset = getTitleNames(jsonList);
-                    /* pass in a function as to what to do on click */
-                    return drawTitleNames(dataset, titleNames.locationInDOM,
-                                          titleNames.clickHandler);
-                });
-
-                titlesWithTag = titleObj.titlesWithTag;
-                titlesWithoutTag = titleObj.titlesWithoutTag;
-
-                titlesWithTag.transition()
-            };
 
         };
 
@@ -367,8 +428,6 @@ var app = app || {};
 
     var buildTitleNames = function(params){
         titleNames.dataURL = params.dataURL || dataURL;
-        titleNames.w = params.width || w;
-        titleNames.h = params.height || h;
         titleNames.locationInDOM = params.locationInDOM || locationInDOM;
         titleNames.tagNameColor = params.tagNameColor || tagNameColor;
         titleNames.clickHandler = params.clickHandler || titleNameClickHandler;
@@ -379,9 +438,14 @@ var app = app || {};
             if (error) return console.warn(error);
             dataset = getTitleNames(jsonList);
             /* pass in a function as to what to do on click */
-            return drawTitleNames(dataset, titleNames.locationInDOM,
+            var toReturn = drawTitleNames(dataset, titleNames.locationInDOM,
                                   titleNames.clickHandler);
+
+            console.log("toReturn");
+            console.log(toReturn);
+            return toReturn;
         });
+
     }
 
     var drawTitleNames = function(dataset, locationInDOM, clickHandler) {
@@ -402,24 +466,22 @@ var app = app || {};
                  .text("Project Titles: ")
                  .style("color", titleNames.tagNameColor);
 
-        var titleTextsWithTag = titleList.selectAll("span")
-                                  .data(titlesWithTag)
+        var titleTextsWithTag = titleList.selectAll("span.titleOfDocWithTag");
+        titleTextsWithTag.data(titlesWithTag)
                                   .enter()
                                   .append("span")
                                   .attr("class", "titleOfDocWithTag")
                                   .text(function(d){
-                                      /* modified from http://stackoverflow.com/a/7463674/4979097 */
                                       return ("- " + d);
                                   })
                                   .style("color", titleNames.tagNameColor);
 
-        var titleTextsWithoutTag = titleList.selectAll("span")
-                                  .data(titlesWithoutTag)
+        var titleTextsWithoutTag = titleList.selectAll("span.titleOfDocWithoutTag");
+        titleTextsWithoutTag.data(titlesWithoutTag)
                                   .enter()
                                   .append("span")
                                   .attr("class", "titleOfDocWithoutTag")
                                   .text(function(d){
-                                      /* modified from http://stackoverflow.com/a/7463674/4979097 */
                                       return ("- " + d);
                                   })
                                   .style("color", titleNames.tagNameColor);
@@ -430,8 +492,10 @@ var app = app || {};
          * titleTextsWithoutTag.on("click", clickHandler);
          */
         var titlesObj = {};
-        titlesObj.titlesWithTag = titleTextsWithTag;
-        titlesObj.titlesWithoutTag = titleTextsWithoutTag;
+        titlesObj.titleTextsWithTag = titleTextsWithTag;
+        titlesObj.titleTextsWithoutTag = titleTextsWithoutTag;
+        console.log("BLAH BLAH BLAH :) ");
+        console.log(titlesObj);
         return titlesObj;
     };
 
@@ -469,10 +533,6 @@ var app = app || {};
         tagNames.sort(function(tag1, tag2){
             return dataset[tag2] - dataset[tag1]; // compare function
         });
-
-        console.log(d3.extent(tagNames, function(d){
-            return dataset[d];
-        }))
 
         var cloud = d3.select(locationInDOM).append("p");
         cloud.append("span")
