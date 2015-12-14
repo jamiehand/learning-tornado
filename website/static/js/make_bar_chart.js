@@ -65,7 +65,7 @@ var app = app || {};
         barChart.locationInDOM = params.locationInDOM || locationInDOM;
         barChart.tagNameColor = params.tagNameColor || tagNameColor;
         barChart.clickHandler = params.clickHandler || barsClickHandler;
-        barChart.titlesLists = params.titlesLists || undefined;
+        barChart.titlesObj = params.titlesObj || undefined;
 
         barPadding = params.barPadding || barPadding;
         barColorBack = params.barColorBack || barColorBack;
@@ -78,7 +78,8 @@ var app = app || {};
             if (error) return console.warn(error);
             dataset = getTagCounts(jsonList);
             /* pass in a function as to what to do on click */
-            drawBarsAndLabels(dataset, barChart.locationInDOM, barChart.clickHandler);
+            drawBarsAndLabels(dataset, barChart.locationInDOM,
+                barChart.clickHandler, barChart.titlesObj);
         });
     };
 
@@ -158,8 +159,8 @@ var app = app || {};
      * can create an array of tag-count pair objects (e.g.
      * {tag: "foo", count: 2}) */
 
-    function drawBarsAndLabels(dataset, locationInDOM, clickHandler) {
-
+    function drawBarsAndLabels(dataset, locationInDOM, clickHandler,
+                                titlesObj) {
         var max_tagName_len_pixels;
         var left_margin;
         var char_width = 6; // assume char width is 6 pixels
@@ -191,18 +192,10 @@ var app = app || {};
                              .range(
                               [left_margin, barChart.w - barPadding * 2]);
 
-        console.log("right side: " + (barChart.w - barPadding * 2));
-
-
         /* sort tagNames according to tag count */
         tagNames.sort(function(tag1, tag2){
             return dataset[tag2] - dataset[tag1]; // compare function
         });
-
-        console.log(d3.extent(tagNames, function(d){
-            return dataset[d];
-        }))
-
 
         /* make list smaller if it's too many tags */
         var maxNumTags = Math.floor(barChart.h/minBarPlusPaddingHeight);
@@ -215,7 +208,7 @@ var app = app || {};
             tagNames = tempTagNames;
         }
 
-        // TODO better way to manage left margin than '- left_margin' ?
+        /* TODO better way to manage left margin than '- left_margin' ? */
 
         var svg = d3.select(locationInDOM).append("svg");
         svg.attr("width", barChart.w)
@@ -310,6 +303,8 @@ var app = app || {};
             fetchData(barChart.dataURL, function(error, jsonList) {
                 if (error) return console.warn(error);
                 dataset = getTagCounts(jsonList, tagName);
+                /* move top bars to reflect the number of documents that
+                 * have the bar's tag as well as tagName */
                 rectsFront.transition()
                           .delay(function(d, i) {
                                return i / dataset.length * 100;
@@ -322,6 +317,7 @@ var app = app || {};
                                   return xScale(dataset[d]) - left_margin;
                               }
                           });
+                /* move values text along with bars */
                 rectValues.transition()
                           .delay(function(d, i) {
                                return i / dataset.length * 100;
@@ -341,7 +337,26 @@ var app = app || {};
                                   return xScale(dataset[d]) - char_width;
                               }
                           });
+                /* change titles lists to first list the documents with the
+                 * tag tagName, and then the other documents */
+                updateTitleNames(titlesObj);
             });
+
+            var updateTitleNames = function(titleObj){
+                fetchData(titleNames.dataURL, function(error, jsonList) {
+                    if (error) return console.warn(error);
+                    dataset = getTitleNames(jsonList);
+                    /* pass in a function as to what to do on click */
+                    return drawTitleNames(dataset, titleNames.locationInDOM,
+                                          titleNames.clickHandler);
+                });
+
+                titlesWithTag = titleObj.titlesWithTag;
+                titlesWithoutTag = titleObj.titlesWithoutTag;
+
+                titlesWithTag.transition()
+            };
+
         };
 
         rectsFront.on("click", updateBarsAndLabels);
@@ -414,10 +429,10 @@ var app = app || {};
          * titleTextsWithTag.on("click", clickHandler);
          * titleTextsWithoutTag.on("click", clickHandler);
          */
-        var titlesLists = {};
-        titlesLists.titlesWithTag = titleTextsWithTag;
-        titlesLists.titlesWithoutTag = titleTextsWithoutTag;
-        return titlesLists;
+        var titlesObj = {};
+        titlesObj.titlesWithTag = titleTextsWithTag;
+        titlesObj.titlesWithoutTag = titleTextsWithoutTag;
+        return titlesObj;
     };
 
     var buildWordCloud = function(params){
