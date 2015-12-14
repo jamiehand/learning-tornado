@@ -52,9 +52,6 @@ var app = app || {};
         });
     };
 
-    /* TODO set barsClickHandler to updateBarsAndLabels once updateBarsAndLabels
-     * is parameterized */
-    var barsClickHandler = cloudClickHandler;
     /* TODO can add handler for titleNames */
     // var titleNameClickHandler = cloudClickHandler;
 
@@ -65,7 +62,6 @@ var app = app || {};
         barChart.h = params.height || h;
         barChart.locationInDOM = params.locationInDOM || locationInDOM;
         barChart.tagNameColor = params.tagNameColor || tagNameColor;
-        barChart.clickHandler = params.clickHandler || barsClickHandler;
 
         barPadding = params.barPadding || barPadding;
         barColorBack = params.barColorBack || barColorBack;
@@ -77,8 +73,7 @@ var app = app || {};
         fetchData(barChart.dataURL, function(error, jsonList) {
             if (error) return console.warn(error);
             dataset = getTagCounts(jsonList);
-            drawBarsAndLabels(dataset, barChart.locationInDOM,
-                barChart.clickHandler);
+            drawBarsAndLabels(dataset, barChart.locationInDOM);
         });
     };
 
@@ -139,18 +134,13 @@ var app = app || {};
         return titlesObj;
     }
 
-    /* dataset is an object
-     * NOTE: this stores only the tag names in the DOM, and not their
-     * counts. If I need the counts to be stored in the DOM later, I
-     * can create an array of tag-count pair objects (e.g.
-     * {tag: "foo", count: 2}) */
-
-    function drawBarsAndLabels(dataset, locationInDOM, clickHandler,
-                                titlesObj) {
+    /* NOTE barChart's click handler is not parameterized; the default (and
+     * currently only) click handler is updateBarsAndLabels() */
+    function drawBarsAndLabels(dataset, locationInDOM, titlesObj) {
         var max_tagName_len_pixels;
         var left_margin;
         var char_width = 6; // assume char width is 6 pixels
-                            // TODO better soln for this?
+                            // TODO better solution for this?
 
         var tagNames = Object.getOwnPropertyNames(dataset);
 
