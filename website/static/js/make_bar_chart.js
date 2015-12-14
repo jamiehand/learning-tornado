@@ -11,6 +11,7 @@ var app = app || {};
     /* declare dataset; set address of where to access data */
     var dataset;
     var dataURL = "/es/";
+    var dataCache = {};
 
     /* width, height, location of svg */
     var w = 200;
@@ -34,9 +35,21 @@ var app = app || {};
     var barsClickHandler = cloudClickHandler; // TODO change back to updateBarsAndLabels
     var titleNameClickHandler = cloudClickHandler; // TODO change this
 
+    var fetchData = function(url, callback){
+        if (dataCache[url]){ // if it's in the cache, return it
+            callback(undefined, dataCache[url])
+        } else { // otherwise, fetch it
+            d3.json(url, function(error, data) {
+                if (error) return console.warn(error);
+                dataCache[url] = data;
+                callback(error, data);
+            });
+        }
+    };
+
     var cloudClickHandler = function(d,i){
         // console.log(d);
-        d3.json(wordCloud.dataURL, function(error, jsonList) {
+        fetchData(wordCloud.dataURL, function(error, jsonList) {
             if (error) return console.warn(error);
 
             dataset = getTagCounts(jsonList, d); // pass the jsonList dict to separate its tags
@@ -54,7 +67,7 @@ var app = app || {};
         barChart.locationInDOM = params.locationInDOM || locationInDOM;
         barChart.tagNameColor = params.tagNameColor || tagNameColor;
         barChart.clickHandler = params.clickHandler || barsClickHandler;
-        barChart.titlesLists = params.titlesLists || undefined;
+        barChart.titlesLists = params.titlesLists || undefined;  // TODO can't set this as "undefined" -- how to do it?
 
         barPadding = params.barPadding || barPadding;
         barColorBack = params.barColorBack || barColorBack;
