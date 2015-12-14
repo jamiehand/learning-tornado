@@ -65,7 +65,7 @@ var app = app || {};
         barChart.locationInDOM = params.locationInDOM || locationInDOM;
         barChart.tagNameColor = params.tagNameColor || tagNameColor;
         barChart.clickHandler = params.clickHandler || barsClickHandler;
-        barChart.titlesLists = params.titlesLists || undefined;  // TODO can't set this as "undefined" -- how to do it?
+        barChart.titlesLists = params.titlesLists || undefined;
 
         barPadding = params.barPadding || barPadding;
         barColorBack = params.barColorBack || barColorBack;
@@ -80,16 +80,6 @@ var app = app || {};
             /* pass in a function as to what to do on click */
             drawBarsAndLabels(dataset, barChart.locationInDOM, barChart.clickHandler);
         });
-        // d3.json(barChart.dataURL, function(
-        //     error, jsonList) {
-        //     if (error) return console.warn(error);
-        //
-        //     dataset = getTagCounts(jsonList); // pass the jsonList dict to separate its tags
-        //     console.log(dataset);
-        //     /* pass it a function as to what to do on click */
-        //     drawBarsAndLabels(dataset, barChart.locationInDOM, barChart.clickHandler);
-        // });
-
     };
 
 
@@ -419,9 +409,12 @@ var app = app || {};
                                   })
                                   .style("color", titleNames.tagNameColor);
 
-        // titleTextsWithTag.on("click", clickHandler);
-        // titleTextsWithoutTag.on("click", clickHandler);
-        var titlesLists;
+        /* NOTE: it would be nice to have clickHandlers for the title names,
+         * too, (e.g. modifying the bar chart) but I'll leave that for later.
+         * titleTextsWithTag.on("click", clickHandler);
+         * titleTextsWithoutTag.on("click", clickHandler);
+         */
+        var titlesLists = {};
         titlesLists.titlesWithTag = titleTextsWithTag;
         titlesLists.titlesWithoutTag = titleTextsWithoutTag;
         return titlesLists;
