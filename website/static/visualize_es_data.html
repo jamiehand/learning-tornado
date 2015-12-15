@@ -9,7 +9,6 @@
         <script type="text/javascript" src="d3/d3.v3.js"></script>
         <script type="text/javascript" src="js/make_bar_chart.js"></script>
         <style type="text/css">
-            /*body { float:left;} // TODO needed for titleParagraph background-color?*/
             text {
                 font-family: sans-serif;
                 /*font-size: 12px;*/
@@ -57,7 +56,9 @@
             });
 
             app.buildWordCloud({
-                locationInDOM: "#div3"
+                locationInDOM: "#div3",
+                min_text_size: 10,
+                max_text_size: 20
             });
         </script>
     </body>

@@ -434,8 +434,8 @@ var app = app || {};
         wordCloud.locationInDOM = params.locationInDOM || locationInDOM;
         wordCloud.tagNameColor = params.tagNameColor || tagNameColor;
         wordCloud.clickHandler = params.clickHandler || cloudClickHandler;
-        wordCloud.min_text_size = params.min_text_size || 8;
-        wordCloud.max_text_size = params.max_text_size || 32;
+        wordCloud.min_text_size = params.min_text_size || 10;
+        wordCloud.max_text_size = params.max_text_size || 30;
 
         /* 'function' is a callback function to be run once /es/ has
          * been fetched. */

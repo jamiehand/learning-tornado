@@ -18,7 +18,7 @@ root = os.path.dirname(__file__) # __file__ is the path of this file
 # root = os.path.join(os.path.dirname(__file__), 'site')
 template_root = os.path.join(root, 'templates')
 blacklist_templates = ('layouts',)
-es = Elasticsearch()  # TODO specify domain/port here?
+es = Elasticsearch()
 
 template_lookup = TemplateLookup(input_encoding='utf-8',
                                  output_encoding='utf-8',
