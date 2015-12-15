@@ -267,7 +267,7 @@ var app = app || {};
                             .style("text-anchor", "left");
 
         var updateBarsAndLabels = function(tagName){
-            updateBarsAndLabelsHelper(tagName, locationInDOM, left_margin,
+            updateBarsAndLabelsHelper(tagName, left_margin,
                 char_width, xScale, rectsFront, rectValues);
         };
 
@@ -277,8 +277,9 @@ var app = app || {};
         rectValues.on("click", updateBarsAndLabels);
     }
 
-    var updateBarsAndLabelsHelper = function(tagName,locationInDOM, left_margin,
+    var updateBarsAndLabelsHelper = function(tagName, left_margin,
                                     char_width, xScale, rectsFront, rectValues){
+
         var updateTitleNames = function(){
             fetchData(titleNames.dataURL, function(error, jsonList) {
                 if (error) return console.warn(error);
@@ -287,10 +288,10 @@ var app = app || {};
                 var titlesWithoutTag = dataset.titlesWithoutTag;
 
                 /* clear current spans (containing titles) */
-                d3.select(locationInDOM).selectAll('span').remove();
+                d3.select(titleNames.locationInDOM).selectAll('span').remove(); // TODO why is this not removing spans?
 
                 /* rebuild spans */
-                var titleList = d3.select(locationInDOM).append("p");
+                var titleList = d3.select(titleNames.locationInDOM).append("p");
                 titleList.append("span")
                          .attr("class", "heading")
                          .text("Project Titles: ");

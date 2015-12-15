@@ -1,0 +1,139 @@
+curl -XPUT "http://localhost:9200/papers"
+
+curl -XPUT "http://localhost:9200/papers/personal/1" -d'
+{
+  "title": "Jamie\"s Autobiography",
+  "contributors": [
+    {"first": "Jamie",
+    "last": "Hand"},
+    {"first": "Christopher",
+    "last": "Andrews"}
+  ],
+  "publish_date": "2015-06-21-T23:39:49-0400",
+  "tags": ["Center for Open Science", "COS",
+  "Middlebury College", "InfoVis", "Information Visualization",
+  "UVA", "Charlottesville, Virginia"]
+}'
+
+curl -XPUT "http://localhost:9200/papers/personal/2" -d'
+{
+  "title": "Prof. Andrews\" Autobiography",
+  "contributors": [
+    {"first": "Bob",
+    "last": "Smith"},
+    {"first": "Christopher",
+    "last": "Andrews"}
+  ],
+  "publish_date": "2012-06-21-T23:39:49-0400",
+  "tags": ["Psychology", "Virginia Tech",
+  "Middlebury College", "InfoVis", "Information Visualization"]
+}'
+
+curl -XPUT "http://localhost:9200/papers/scientific/1" -d'
+{
+  "title": "A Survey of Software Frameworks for Cluster-Based Large High-Resolution Displays",
+  "contributors": [
+    {"first": "H.",
+    "last": "Chung"},
+    {"first": "Christopher",
+    "last": "Andrews"},
+    {"first": "C.",
+    "last": "North"}
+  ],
+  "publish_date": "2014-06-21-T23:39:49-0400",
+  "tags": ["Center for Open Science", "COS",
+  "Middlebury College", "InfoVis", "Information Visualization",
+  "Displays", "High-Resolution large displays",
+  "Cluster-based"]
+}'
+
+curl -XPUT "http://localhost:9200/papers/scientific/2" -d'
+{
+  "title": "System-level modeling of a network switch SoC",
+  "contributors": [
+    {"first": "Jamie",
+    "last": "Hand"},
+    {"first": "Christopher",
+    "last": "Andrews"},
+    {"first": "J. M.",
+    "last": "Paul"},
+    {"first": "A. S.",
+    "last": "Cassidy"},
+    {"first": "D. E.",
+    "last": "Thomas"}
+  ],
+  "publish_date": "2002-06-21-T23:39:49-0400",
+  "tags": ["ACM", "Virginia Tech",
+  "InfoVis", "Information Visualization"]
+}'
+
+curl -XPUT "http://localhost:9200/papers/scientific/3" -d'
+{
+  "title": "VizCept: Supporting Synchronous Collaboration for Constructing Visualizations in Intelligence Analysis",
+  "contributors": [
+    {"first": "H.",
+    "last": "Chung"},
+    {"first": "Christopher",
+    "last": "Andrews"}
+  ],
+  "publish_date": "2010-06-21-T23:39:49-0400",
+  "tags": ["Center for Open Science", "COS",
+  "Middlebury College", "InfoVis", "Information Visualization"]
+}'
+
+curl -XPUT "http://localhost:9200/papers/scientific/4" -d'
+{
+  "title": "Reproducibility Project: Psychology",
+  "contributors": [
+    {"first": "Brian",
+    "last": "Nosek"},
+    {"first": "Jeff",
+    "last": "Spies"}
+  ],
+  "publish_date": "2010-06-21-T23:39:49-0400",
+  "tags": ["Center for Open Science", "COS",
+  "Metascience", "Middlebury College",
+  "Charlottesville, Virginia"]
+}'
+
+curl -XPUT "http://localhost:9200/papers/scientific/5" -d'
+{
+  "title": "COS Paper with InfoVis",
+  "contributors": [
+    {"first": "H.",
+    "last": "Chung"},
+    {"first": "Christopher",
+    "last": "Andrews"}
+  ],
+  "publish_date": "2010-06-21-T23:39:49-0400",
+  "tags": ["Center for Open Science", "COS",
+  "Middlebury College", "InfoVis"]
+}'
+
+curl -XPUT "http://localhost:9200/papers/scientific/6" -d'
+{
+  "title": "Biology Paper in collaboration with COS",
+  "contributors": [
+    {"first": "H.",
+    "last": "Chung"},
+    {"first": "Christopher",
+    "last": "Andrews"}
+  ],
+  "publish_date": "2010-06-21-T23:39:49-0400",
+  "tags": ["Cell Biology", "COS"]
+}'
+
+curl -XPUT "http://localhost:9200/papers/scientific/7" -d'
+{
+  "title": "Middlebury Cell Biology Paper",
+  "contributors": [
+    {"first": "H.",
+    "last": "Chung"},
+    {"first": "Christopher",
+    "last": "Andrews"}
+  ],
+  "publish_date": "2010-06-21-T23:39:49-0400",
+  "tags": ["Cell Biology", "Middlebury College"]
+}'
+
+curl -XGET "http://localhost:9200/papers/_search?pretty=true&q=*:*"

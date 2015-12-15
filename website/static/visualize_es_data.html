@@ -43,26 +43,20 @@
     </head>
     <body>
         <div id="div1"> </div>
-        <div id="div2" background-color="blue"> </div>
+        <div id="div2"> </div>
         <div id="div3"> </div>
         <script type="text/javascript">
-            var titlesObj = app.buildTitleNames({
-                                    width: 300,
-                                    height: 260,
-                                    locationInDOM: "#div2"
-                                });
-
-            // TODO need to make this execute only after titlesObj returns?
             app.buildBarChart({
                 width: 400,
                 height: 200,
-                locationInDOM: "#div1",
-                titlesObj: titlesObj
+                locationInDOM: "#div1"
+            });
+
+            app.buildTitleNames({
+                locationInDOM: "#div2"
             });
 
             app.buildWordCloud({
-                width: 300,
-                height: 260,
                 locationInDOM: "#div3"
             });
         </script>
