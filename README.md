@@ -2,10 +2,18 @@
 A repository for learning how to use tornado, combined with elasticsearch
 and d3.js for visualizations.
 
+### Dependencies
+* python 3.4
+* elasticsearch-py
+* tornado
+* mako
+
 ### To view main visualization:
 * create elasticsearch documents in 'papers' index as found in [elasticsearch-documents](./elasticsearch-documents)
-* run elasticsearch on localhost:9200
-* access: /static/visualize\_es\_data.html
+* run elasticsearch on `localhost:9200`
+* in another terminal, cd to [website](./website) and run:
+`python app_serve_static.py`
+* in a browser, access: `<url_of_elasticsearch>/static/visualize_es_data.html`
 
 ### TODO:
 
