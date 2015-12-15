@@ -48,7 +48,8 @@ var app = app || {};
         fetchData(wordCloud.dataURL, function(error, jsonList) {
             if (error) return console.warn(error);
             dataset = getTagCounts(jsonList, d);
-            drawWordCloud(dataset, wordCloud.locationInDOM, wordCloud.clickHandler);
+            drawWordCloud(dataset, wordCloud.locationInDOM, wordCloud.clickHandler,
+                wordCloud.min_text_size, wordCloud.max_text_size);
         });
     };
 
@@ -89,6 +90,8 @@ var app = app || {};
         var dataLen = docList.length;
         for (i=0; i<dataLen; i++){
             tempTags = docList[i]._source.tags;
+            /* if there is no selected tag, or if the selected tag is in
+             * tempTags */
             if (selectedTagName == undefined ||
                 (tempTags.indexOf(selectedTagName) > -1)) {
                 tempTags.forEach(
@@ -266,6 +269,11 @@ var app = app || {};
                             .style("fill", barChart.tagNameColor) // TODO put this in the CSS
                             .style("text-anchor", "left");
 
+        rectLabels.append("title")
+                  .text(function(d) {
+                        return d;
+                  });
+
         var updateBarsAndLabels = function(tagName){
             updateBarsAndLabelsHelper(tagName, left_margin,
                 char_width, xScale, rectsFront, rectValues);
@@ -426,21 +434,23 @@ var app = app || {};
         wordCloud.locationInDOM = params.locationInDOM || locationInDOM;
         wordCloud.tagNameColor = params.tagNameColor || tagNameColor;
         wordCloud.clickHandler = params.clickHandler || cloudClickHandler;
+        wordCloud.min_text_size = params.min_text_size || 8;
+        wordCloud.max_text_size = params.max_text_size || 32;
 
         /* 'function' is a callback function to be run once /es/ has
          * been fetched. */
         fetchData(wordCloud.dataURL, function(error, jsonList) {
             if (error) return console.warn(error);
             dataset = getTagCounts(jsonList);
-            drawWordCloud(dataset, wordCloud.locationInDOM, wordCloud.clickHandler);
+            drawWordCloud(dataset, wordCloud.locationInDOM, wordCloud.clickHandler,
+                wordCloud.min_text_size, wordCloud.max_text_size);
         });
     };
 
-    var drawWordCloud = function(dataset, locationInDOM, clickHandler) {
+    var drawWordCloud = function(dataset, locationInDOM, clickHandler,
+                            min_text_size, max_text_size) {
         var tagNames = Object.getOwnPropertyNames(dataset);
 
-        var min_text_size = 8;
-        var max_text_size = 32;
         var wordSizeScale = d3.scale.linear()
                               .domain([0, d3.max(tagNames, function(d) {
                                     return dataset[d];
@@ -457,18 +467,18 @@ var app = app || {};
              .attr("class", "heading")
              .text("Tag Cloud: ")
              .style("color", titleNames.tagNameColor);
-        var tagTexts = cloud.selectAll("span")
-                           .data(tagNames)
-                           .enter()
-                           .append("span")
-                           .attr("class", "cloudSpan")
-                           .text(function(d){
-                               return (d +"("+ dataset[d] +")");
-                           })
-                           .style("font-family", "sans-serif")
-                           .style("font-size", function(tagName){
-                               return Math.floor(wordSizeScale(dataset[tagName]))+"px";})
-                           .style("color", wordCloud.tagNameColor);
+        var tagTexts = cloud.selectAll("span.cloudSpan")
+                            .data(tagNames)
+                            .enter()
+                            .append("span")
+                            .attr("class", "cloudSpan")
+                            .text(function(d){
+                                return (d +"("+ dataset[d] +")");
+                            })
+                            .style("font-family", "sans-serif")
+                            .style("font-size", function(tagName){
+                                return Math.floor(wordSizeScale(dataset[tagName]))+"px";})
+                            .style("color", wordCloud.tagNameColor);
 
         tagTexts.on("click", clickHandler);
     };
