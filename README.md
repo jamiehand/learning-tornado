@@ -15,8 +15,10 @@ and d3.js for visualizations.
 `python app_serve_static.py`
 * in a browser, access: `<url_of_elasticsearch>/static/visualize_es_data.html`
 
-### TODO:
+### Screenshot from main visualization:
+[![Screenshot from visualization](http://i.imgur.com/hAj5yib.png?1)](http://i.imgur.com/hAj5yib.png?1)
 
+### TODO:
 * Separate "make_bar_chart.js" into "make_bar_chart.js", "make_title_list.js",
 and "make_word_cloud.js" (or separate code in another way that makes sense).
 * TODOs found throughout make_bar_chart.js
